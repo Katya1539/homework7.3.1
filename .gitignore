@@ -1,5 +1,6 @@
 /node_modules/
-/user.js
+user.js
+/playwright-report/
 
 
 .vscode/*
@@ -9,5 +10,7 @@
 !.vscode/extensions.json
 *.code-workspace
 
-# Local History for Visual Studio Code
 .history/
+/test-results/
+/playwright-report/
+/playwright/.cache/

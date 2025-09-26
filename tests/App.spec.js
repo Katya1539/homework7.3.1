@@ -1,19 +1,39 @@
 const { test, expect } = require("@playwright/test");
+const { chromium } = require("playwright");
+const {
+  email,
+  password,
+  incorrectEmail,
+  incorrectPassport,
+} = require("../user");
 
-test("successful login and password", async ({ page }) => { 
-  await page.goto('https://netology.ru/?modal=sign_in');
-  await page.fill('[placeholder="Email"]', 'erkenovakatya@mail.ru');
-  await page.fill('[placeholder="Пароль"]', 'Loki1969');
+test("Failed authorization", async () => {
+  const browser = await chromium.launch({
+    headless: false,
+    slowMo: 500,
+  });
+  const page = await browser.newPage("https://netology.ru/?modal=sign_in");
+  await page.goto("https://netology.ru/?modal=sign_in");
+  await page.fill('[placeholder="Email"]', incorrectEmail);
+  await page.fill('[placeholder="Пароль"]', incorrectPassport);
   await page.click('[data-testid="login-submit-btn"]');
-  await expect(page.url('https://netology.ru/profile/7858212')).toContain('/profile/');
-  await expect(page.locator('h2:has-text("Мои курсы")')).toBeVisible();
-});
+  const error = await page.locator('[data-testid="login-error-hint"]');
+  await expect(error).toHaveText("Вы ввели неправильно логин или пароль");
+  await page.screenshot({ path: "screenshotFailed.png", fullPage: true });
+  browser.close();
+}, 60000);
 
-test('Incorrect login or password', async ({ page }) => {
-  await page.goto('https://netology.ru/?modal=sign_in');
-  await page.fill('[placeholder="Email"]', 'erkenovakatya@mail.ru');
-  await page.fill('[placeholder="Пароль"]', 'Loki');
+test("Successful authorization", async () => {
+  const browser = await chromium.launch({
+    headless: false,
+    slowMo: 500,
+  });
+  const page = await browser.newPage("https://netology.ru/?modal=sign_in");
+  await page.goto("https://netology.ru/?modal=sign_in");
+  await page.fill('[placeholder="Email"]', email);
+  await page.fill('[placeholder="Пароль"]', password);
   await page.click('[data-testid="login-submit-btn"]');
-  await expect(page.locator('[data-testid="login-error-hint"]')).toBeVisible();
-  await expect(page.locator('[data-testid="login-error-hint"]')).toContainText('Вы ввели неправильно логин или пароль');
-});
+  await expect(page.locator("h2")).toContainText(["Мои курсы и профессии"]);
+  await page.screenshot({ path: "screenshotSuccessful.png", fullPage: true });
+  browser.close();
+}, 60000);
